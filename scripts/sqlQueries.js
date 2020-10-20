@@ -22,15 +22,42 @@ function sqlQueries(option) {
             }
         );
     } else if (option.choice === "Add Employees") {
-
-    } else if (option.choice === "View Departments") {
-
-    } else if (option.choice === "View Roles") {
-
-    } else if (option.choice === "View Employees") {
+        connection.query("INSERT INTO employee SET ?",
+            [{
+                first_name: option.first_name,
+                last_name: option.last_name,
+                role_id: option.role_id,
+                manager_id: option.manager_id
+            }],
+            function (error, response) {
+                if (error) { throw error };
+            }
+        );
 
     } else if (option.choice === "Update Employee Roles") {
-
+        connection.query("UPDATE employee SET ? WHERE ?",
+            [{
+                role_id: option.role_id
+            },
+            {
+                id: option.id
+            }],
+            function (error, response) {
+                if (error) { throw error };
+            }
+        );
+    } else if (option.choice === "Update Employee Managers") {
+        connection.query("UPDATE employee SET ? WHERE ?",
+            [{
+                manager_id: option.manager_id
+            },
+            {
+                id: option.id
+            }],
+            function (error, response) {
+                if (error) { throw error };
+            }
+        );
     } else {
         console.log("Error, Exiting");
         connection.end();
