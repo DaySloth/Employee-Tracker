@@ -6,6 +6,9 @@ const util = require("util");
 
 let deptArray = [];
 let deptNameArray = [];
+let roleArray = [];
+let roleNameArray = [];
+let managerArray = [];
 
 function getDept(initRes) {
     connection.query("SELECT * FROM department", function (error, response) {
@@ -18,7 +21,36 @@ function getDept(initRes) {
                 name: element.name
             })
         });
-        handleChoices(initRes);
+        connection.query("SELECT * FROM role", function (error, response) {
+            roleArray = [];
+    
+            roleNameArray = response.map(element => element.title);
+            response.forEach(element => {
+                roleArray.push({
+                    id: element.id,
+                    title: element.title,
+                    salary: element.salary,
+                    department_id: element.department_id
+                })
+            });
+            connection.query("SELECT first_name, last_name FROM employee AS a INNER JOIN role AS b ON a.role_id = b.id ", function(error, response){
+                managerNameArray = ['None'];
+
+                response.forEach(element => {
+                    managerNameArray.push(`${element.first_name} ${element.last_name}`);
+                });
+                
+                connection.query("SELECT * FROM employee", function(error, response){
+                    managerArray = [];
+    
+                    response.forEach(element => {
+                        managerArray.push(element);
+                    });
+                    handleChoices(initRes);
+                })
+            })
+        });
+
     });
 };
 
@@ -70,7 +102,6 @@ function handleChoices(choice) {
                     response.departmentId = element.id
                 }
             });
-            console.log("hitting sql")
             sqlQueries({
                 choice: choice.selection,
                 title: response.title,
@@ -82,12 +113,60 @@ function handleChoices(choice) {
         });
 
     } else if (choice.selection === "Add Employees") {
-
+        inquirer.prompt([
+            {
+                type: "input",
+                name: "first_name",
+                message: "First Name?"
+            },
+            {
+                type: "input",
+                name: "last_name",
+                message: "Last Name?"
+            },
+            {
+                type: "list",
+                name: "role",
+                message: "What is their role?",
+                choices: roleNameArray
+            },
+            {
+                type: "list",
+                name: "manager",
+                message: "Who is their Manager?",
+                choices: managerNameArray
+            }
+        ]).then(function(response){
+            console.log(response);
+            roleArray.forEach(element=>{
+                if(element.title === response.role){
+                    response.role_id = element.id;
+                }
+                console.log(managerArray)
+            });
+            if(response.manager === 'None'){
+                sqlQueries({
+                    choice: choice.selection,
+                    first_name: response.first_name,
+                    last_name: response.last_name,
+                    role_id: response.role_id
+                });
+            }else{
+                sqlQueries({
+                    choice: choice.selection,
+                    first_name: response.first_name,
+                    last_name: response.last_name,
+                    role_id: response.role_id,
+                    manager_id: response.manager_id
+                });
+            }
+        });
     } else if (choice.selection === "View Departments") {
         console.table(deptArray);
         init().then(getDept);
     } else if (choice.selection === "View Roles") {
-
+        console.table(roleArray);
+        init().then(getDept);
     } else if (choice.selection === "View Employees") {
 
     } else if (choice.selection === "Update Employee Roles") {
