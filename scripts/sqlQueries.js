@@ -8,7 +8,8 @@ function sqlQueries(option) {
                 name: option.deptName
             }], function (error, response) {
                 if (error) { throw error };
-            })
+            }
+        );
     } else if (option.choice === "Add Roles") {
         connection.query("INSERT INTO role SET ?",
             [{
@@ -18,7 +19,8 @@ function sqlQueries(option) {
             }],
             function (error, response) {
                 if (error) { throw error };
-            })
+            }
+        );
     } else if (option.choice === "Add Employees") {
 
     } else if (option.choice === "View Departments") {
