@@ -66,7 +66,7 @@ function init() {
             type: "list",
             message: "What would you like to do?",
             name: "selection",
-            choices: ["Add Departments", "Add Roles", "Add Employees", "View Departments", "View Roles", "View Employees", "Update Employee Roles", "Update Employee Managers", "EXIT"]
+            choices: ["Add Departments", "Add Roles", "Add Employees", "View Departments", "View Roles", "View Employees", "View Employees by Manager", "Update Employee Roles", "Update Employee Managers", "EXIT"]
         }
     ]);
 };
@@ -144,7 +144,7 @@ function handleChoices(choice) {
         INNER JOIN role AS r ON e.role_id = r.id
         INNER JOIN department AS d ON r.department_id = d.id;
         `, function(err, res){
-            //console.log(res);
+            if(err){throw err};
             let displayObj = []
             res.forEach(element=>{
                 let employeeObj = {
@@ -170,6 +170,71 @@ function handleChoices(choice) {
             init().then(getData);
         })
 
+    } else if (choice.selection === "View Employees by Manager"){
+        connection.query("SELECT id, first_name, last_name, manager_id from employee", function(err, res){
+            let employeesWithManagerID = [];
+            let managerList = [];
+            let managerNameList = ['No manager listed',];
+            let name;
+            let displayEmployeeArray =[];
+            res.forEach(element => {
+                if(element.manager_id){
+                    employeesWithManagerID.push(element);
+                }
+            });
+            employeesWithManagerID.forEach(employee =>{
+                res.forEach(element=>{
+                    if(employee.manager_id === element.id){
+                        name = `${element.first_name} ${element.last_name}`;
+                        if(managerNameList.includes(name)){}
+                        else{
+                            managerList.push(element);
+                            managerNameList.push(name);
+                        };
+                    };
+                });
+            });
+            userPrompts(choice.selection, managerNameList).then(function(userResult){
+                if(userResult.managerName === 'No manager listed'){
+                    res.forEach(employee=>{
+                        if(employee.manager_id){}
+                        else{
+                            displayEmployeeArray.push({ name: `${employee.first_name} ${employee.last_name}`})
+                        }
+                    });
+
+                    console.log("=".repeat(70));
+                    console.log("Displaying employees with no manager");
+                    console.log("=".repeat(50));
+                    console.table(displayEmployeeArray);
+                    console.log("=".repeat(70));
+
+                    init().then(getData);
+                }else{
+                    const managerSplit = userResult.managerName.split(" ");
+                    managerList.forEach(element=>{
+                        if(element.first_name === managerSplit[0] && element.last_name === managerSplit[1]){
+                            res.forEach(employee=>{
+                                if(employee.manager_id === element.id){
+                                    displayEmployeeArray.push({
+                                        employee: `${employee.first_name} ${employee.last_name}`
+                                    })
+                                }
+                            });
+                        };
+                    });
+
+                    console.log("=".repeat(70));
+                    console.log("Displaying employees under "+ userResult.managerName);
+                    console.log("=".repeat(50));
+                    console.table(displayEmployeeArray);
+                    console.log("=".repeat(70));
+
+                    init().then(getData);
+                }
+                
+            });
+        })
     } else if (choice.selection === "Update Employee Roles") {
         userPrompts(choice.selection, employeeNameArray).then(function(response){
             if(response.employee === "None"){

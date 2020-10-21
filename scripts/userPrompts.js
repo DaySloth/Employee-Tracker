@@ -83,6 +83,16 @@ function askQuestion(question, arrayA, arrayB){
                 }
             ]);
 
+        case "View Employees by Manager":
+            return inquirer.prompt([
+                {
+                    type: "list",
+                    message: "What manager would you like to view employees for?",
+                    name: "managerName",
+                    choices: arrayA
+                }
+            ]);
+
         default:
             return "HIT THE DEFAULT"
     }
