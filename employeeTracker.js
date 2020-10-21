@@ -107,15 +107,15 @@ function handleChoices(choice) {
                     response.role_id = element.id;
                 }
             });
-
+            let name;
             employeeArray.forEach(element=>{
-                let name = `${element.first_name} ${element.last_name}`
+                name = `${element.first_name} ${element.last_name}`;
                 if(name === response.manager){
                     response.manager_id = element.id;
                 }
             });
             console.log("=".repeat(70));
-            console.log("Adding Employee: "+ name +" to database");
+            console.log(`Adding Employee: ${response.first_name} ${response.last_name} to database`);
             console.log("=".repeat(70));
             sqlQueries({
                 choice: choice.selection,
@@ -246,5 +246,3 @@ Font.create("Employee Manager", 'Doom').then(function(graphic){
     console.log("=".repeat(105));
     init().then(getData);
 });
-
-//init().then(getData);
