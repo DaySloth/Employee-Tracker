@@ -1,9 +1,9 @@
 const connection = require("./scripts/dbConnection");
 const inquirer = require("inquirer");
 const cTable = require("console.table");
+const userPrompts = require("./scripts/userPrompts");
 const sqlQueries = require("./scripts/sqlQueries");
-const util = require("util");
-const { up } = require("inquirer/lib/utils/readline");
+const Font = require("ascii-art-font");
 
 let deptArray = [];
 let deptNameArray = [];
@@ -14,6 +14,7 @@ let employeeNameArray = [];
 
 function getData(initRes) {
     connection.query("SELECT * FROM department", function (error, response) {
+        if(error){throw error};
         deptArray = [];
 
         deptNameArray = response.map(element => element.name);
@@ -24,6 +25,7 @@ function getData(initRes) {
             })
         });
         connection.query("SELECT * FROM role", function (error, response) {
+            if(error){throw error};
             roleArray = [];
     
             roleNameArray = response.map(element => element.title);
@@ -36,6 +38,7 @@ function getData(initRes) {
                 })
             });
             connection.query("SELECT first_name, last_name FROM employee AS a INNER JOIN role AS b ON a.role_id = b.id ", function(error, response){
+                if(error){throw error};
                 employeeNameArray = ['None'];
 
                 response.forEach(element => {
@@ -43,6 +46,7 @@ function getData(initRes) {
                 });
                 
                 connection.query("SELECT * FROM employee", function(error, response){
+                    if(error){throw error};
                     employeeArray = [];
     
                     response.forEach(element => {
@@ -69,41 +73,23 @@ function init() {
 
 function handleChoices(choice) {
     if (choice.selection === "Add Departments") {
-        inquirer.prompt([
-            {
-                type: "input",
-                name: "deptName",
-                message: "What is the department name?"
-            }
-        ]).then(function (response) {
-            console.log(`Adding '${response.deptName}' to database`);
+        userPrompts(choice.selection).then(function(response) {
+            console.log("=".repeat(70));
+            console.log(`Adding Department: '${response.deptName}' to database`);
+            console.log("=".repeat(70));
             sqlQueries({ choice: choice.selection, deptName: response.deptName });
             init().then(getData);
         });
     } else if (choice.selection === "Add Roles") {
-        inquirer.prompt([
-            {
-                type: "input",
-                name: "title",
-                message: "What is the role title?"
-            },
-            {
-                type: "input",
-                name: "salary",
-                message: "Salary for this role?"
-            },
-            {
-                type: "list",
-                name: "dept",
-                message: "What department does this belong to?",
-                choices: deptNameArray
-            },
-        ]).then(function (response) {
+        userPrompts(choice.selection, deptNameArray).then(function(response) {
             deptArray.forEach(element => {
                 if (element.name === response.dept) {
                     response.departmentId = element.id
                 }
             });
+            console.log("=".repeat(70));
+            console.log(`Adding Role: '${response.title}' to database`);
+            console.log("=".repeat(70));
             sqlQueries({
                 choice: choice.selection,
                 title: response.title,
@@ -115,30 +101,7 @@ function handleChoices(choice) {
         });
 
     } else if (choice.selection === "Add Employees") {
-        inquirer.prompt([
-            {
-                type: "input",
-                name: "first_name",
-                message: "First Name?"
-            },
-            {
-                type: "input",
-                name: "last_name",
-                message: "Last Name?"
-            },
-            {
-                type: "list",
-                name: "role",
-                message: "What is their role?",
-                choices: roleNameArray
-            },
-            {
-                type: "list",
-                name: "manager",
-                message: "Who is their Manager?",
-                choices: employeeNameArray
-            }
-        ]).then(function(response){
+        userPrompts(choice.selection, roleNameArray, employeeNameArray).then(function(response){
             roleArray.forEach(element=>{
                 if(element.title === response.role){
                     response.role_id = element.id;
@@ -151,7 +114,9 @@ function handleChoices(choice) {
                     response.manager_id = element.id;
                 }
             });
-            
+            console.log("=".repeat(70));
+            console.log("Adding Employee: "+ name +" to database");
+            console.log("=".repeat(70));
             sqlQueries({
                 choice: choice.selection,
                 first_name: response.first_name,
@@ -163,10 +128,14 @@ function handleChoices(choice) {
             init().then(getData);
         });
     } else if (choice.selection === "View Departments") {
+        console.log("=".repeat(105));
         console.table(deptArray);
+        console.log("=".repeat(105));
         init().then(getData);
     } else if (choice.selection === "View Roles") {
+        console.log("=".repeat(105));
         console.table(roleArray);
+        console.log("=".repeat(105));
         init().then(getData);
     } else if (choice.selection === "View Employees") {
         connection.query(`
@@ -195,20 +164,14 @@ function handleChoices(choice) {
                 })
                 displayObj.push(employeeObj);
             })
-
+            console.log("=".repeat(105));
             console.table(displayObj);
+            console.log("=".repeat(105));
             init().then(getData);
         })
 
     } else if (choice.selection === "Update Employee Roles") {
-        inquirer.prompt([
-            {
-                type: "list",
-                message: "Who would you like to update roles for?",
-                name: "employee",
-                choices: employeeNameArray
-            }
-        ]).then(function(response){
+        userPrompts(choice.selection, employeeNameArray).then(function(response){
             if(response.employee === "None"){
                 init().then(getData);
             }else{
@@ -236,26 +199,17 @@ function handleChoices(choice) {
                             updateObj.role_id = element.id;
                         }
                     });
+
+                    console.log("=".repeat(70));
+                    console.log(`Updating ${response.employee}'s Role to ${res.newRole}`);
+                    console.log("=".repeat(70));
                     sqlQueries(updateObj);
                     init().then(getData);                  
                 })
             }
         })
     } else if(choice.selection === "Update Employee Managers"){
-        inquirer.prompt([
-            {
-                type: "list",
-                message: "Who would you like to update the manager for?",
-                name: "employee",
-                choices: employeeNameArray
-            },
-            {
-                type: "list",
-                message: "Who would you like their new manager to be?",
-                name: "newManager",
-                choices: employeeNameArray
-            }
-        ]).then(function(response){
+        userPrompts(choice.selection, employeeNameArray).then(function(response){
             const employeeSplit = response.employee.split(" ");
             const managerSplit = response.newManager.split(" ");
             const updateObj = {
@@ -269,17 +223,28 @@ function handleChoices(choice) {
                     updateObj.manager_id = element.id
                 }
             });
-
+            console.log("=".repeat(70));
+            console.log(`Updating ${response.employee}'s manager to ${response.newManager}`);
+            console.log("=".repeat(70));
             sqlQueries(updateObj);
             init().then(getData);
         })
     }else {
-        console.log("Thank You for using the app!")
-        connection.end();
+        Font.create("Bye bye", 'Doom').then(function(graphic){
+            console.log("=".repeat(45));
+            console.log(graphic);
+            console.log("=".repeat(45));
+            connection.end();
+        });
+        
     }
 };
-init().then(getData);
 
+Font.create("Employee Manager", 'Doom').then(function(graphic){
+    console.log("=".repeat(105));
+    console.log(graphic);
+    console.log("=".repeat(105));
+    init().then(getData);
+});
 
-
-
+//init().then(getData);
