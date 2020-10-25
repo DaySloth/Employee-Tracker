@@ -1,7 +1,7 @@
 const inquirer = require("inquirer");
 
-function askQuestion(question, arrayA, arrayB){
-    switch(question){
+function askQuestion(question, arrayA, arrayB) {
+    switch (question) {
         case "Add Departments":
             return inquirer.prompt([
                 {
@@ -90,6 +90,22 @@ function askQuestion(question, arrayA, arrayB){
                     message: "What manager would you like to view employees for?",
                     name: "managerName",
                     choices: arrayA
+                }
+            ]);
+
+        case "Delete Departments":
+            return inquirer.prompt([
+                {
+                    type: "list",
+                    message: "What department would you like to delete?",
+                    name: "deptName",
+                    choices: arrayA
+                },
+                {
+                    type: "list",
+                    message: "Are you SURE? This will delete all roles and employee associated with this Dept!!",
+                    name: "isSure",
+                    choices: ["Yes", "No"]
                 }
             ]);
 
