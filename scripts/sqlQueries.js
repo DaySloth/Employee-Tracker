@@ -58,6 +58,12 @@ function sqlQueries(option) {
                 if (error) { throw error };
             }
         );
+
+    } else if (option.choice === "Delete Departments") {
+        connection.query("DELETE FROM department WHERE id=?",[option.deptId], function(error, response){
+            if(error){throw error};
+        });
+
     } else {
         console.log("Error, Exiting");
         connection.end();
