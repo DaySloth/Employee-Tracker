@@ -5,7 +5,7 @@ USE employeeTracker_db;
 CREATE TABLE department (
     id INTEGER(30) NOT NULL AUTO_INCREMENT,
     name VARCHAR(30) NOT NULL,
-    PRIMARY KEY (id) ON DELETE CASCADE
+    PRIMARY KEY (id)
 );
 
 CREATE TABLE role (
