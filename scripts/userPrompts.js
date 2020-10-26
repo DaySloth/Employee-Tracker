@@ -109,6 +109,38 @@ function askQuestion(question, arrayA, arrayB) {
                 }
             ]);
 
+        case "Delete Roles":
+            return inquirer.prompt([
+                {
+                    type: "list",
+                    message: "What role would you like to delete?",
+                    name: "roleName",
+                    choices: arrayA
+                },
+                {
+                    type: "list",
+                    message: "Are you SURE? This will delete all employees associated with this Role!!",
+                    name: "isSure",
+                    choices: ["Yes", "No"]
+                }
+            ]);
+
+        case "Delete Employee":
+            return inquirer.prompt([
+                {
+                    type: "list",
+                    message: "What employee would you like to delete?",
+                    name: "employeeName",
+                    choices: arrayA
+                },
+                {
+                    type: "list",
+                    message: "Are you SURE? This will delete this employee!!",
+                    name: "isSure",
+                    choices: ["Yes", "No"]
+                }
+            ]);
+
         default:
             return "HIT THE DEFAULT"
     }
