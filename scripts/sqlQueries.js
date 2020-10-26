@@ -60,8 +60,18 @@ function sqlQueries(option) {
         );
 
     } else if (option.choice === "Delete Departments") {
-        connection.query("DELETE FROM department WHERE id=?",[option.deptId], function(error, response){
-            if(error){throw error};
+        connection.query("DELETE FROM department WHERE id=?", [option.deptId], function (error, response) {
+            if (error) { throw error };
+        });
+
+    } else if (option.choice === "Delete Roles") {
+        connection.query("DELETE FROM role WHERE id=?", [option.roleId], function (error, response) {
+            if (error) { throw error };
+        });
+
+    } else if (option.choice === "Delete Employee") {
+        connection.query("DELETE FROM employee WHERE id=?", [option.employeeId], function (error, response) {
+            if (error) { throw error };
         });
 
     } else {
