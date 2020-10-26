@@ -66,7 +66,7 @@ function init() {
             type: "list",
             message: "What would you like to do?",
             name: "selection",
-            choices: ["Add Departments", "Add Roles", "Add Employees", "View Departments", "View Roles", "View Employees", "View Employees by Manager", "Update Employee Roles", "Update Employee Managers", "Delete Departments", "EXIT"]
+            choices: ["Add Departments", "Add Roles", "Add Employees", "View Departments", "View Roles", "View Employees", "View Employees by Manager", "View Total Dept Budget Usage", "Update Employee Roles", "Update Employee Managers", "Delete Departments", "Delete Roles", "Delete Employee", "EXIT"]
         }
     ]);
 };
@@ -313,6 +313,64 @@ function handleChoices(choice) {
                 init().then(getData);
             }
         });
+    } else if (choice.selection === "Delete Roles") {
+        userPrompts(choice.selection, roleNameArray).then(function (res) {
+            if (res.isSure === "Yes") {
+                roleArray.forEach(element => {
+                    if (element.title === res.roleName) {
+                        console.log("=".repeat(70));
+                        console.log(`Deleting ${res.roleName} from Company Roles`);
+                        console.log("=".repeat(70));
+                        sqlQueries({
+                            choice: choice.selection,
+                            roleId: element.id
+                        });
+                        init().then(getData);
+                    };
+                });
+            } else {
+                init().then(getData);
+            }
+        });
+
+    } else if (choice.selection === "Delete Employee") {
+        userPrompts(choice.selection, employeeNameArray).then(function (res) {
+            if (res.employeeName === "None") {
+                init().then(getData);
+            } else {
+                const employeeSplit = res.employeeName.split(" ");
+                if (res.isSure === "Yes") {
+                    employeeArray.forEach(element => {
+                        if (element.first_name === employeeSplit[0] && element.last_name === employeeSplit[1]) {
+                            console.log("=".repeat(70));
+                            console.log(`Deleting ${element.first_name} ${element.last_name} from Company`);
+                            console.log("=".repeat(70));
+                            sqlQueries({
+                                choice: choice.selection,
+                                employeeId: element.id
+                            });
+                            init().then(getData);
+                        };
+                    });
+                } else {
+                    init().then(getData);
+                };
+            };
+
+        });
+
+    } else if (choice.selection === "View Total Dept Budget Usage") {
+        userPrompts(choice.selection, deptNameArray).then(function(res){
+            deptArray.forEach(element=>{
+                if(element.name === res.deptName){
+                    const deptId = element.id;
+                }
+            });
+            connection.query("SELECT salary FROM role WHERE department_id=?",[deptId], function(error, response){
+                if(error){throw error};
+                console.log(response);
+            })
+        })
     } else {
         Font.create("Bye bye", 'Doom').then(function (graphic) {
             console.log("=".repeat(45));
