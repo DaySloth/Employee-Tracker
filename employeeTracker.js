@@ -360,17 +360,32 @@ function handleChoices(choice) {
         });
 
     } else if (choice.selection === "View Total Dept Budget Usage") {
-        userPrompts(choice.selection, deptNameArray).then(function(res){
-            deptArray.forEach(element=>{
-                if(element.name === res.deptName){
-                    const deptId = element.id;
-                }
+        userPrompts(choice.selection, deptNameArray).then(function (res) {
+            let deptId;
+            deptArray.forEach(element => {
+                if (element.name === res.deptName) {
+                    deptId = element.id;
+                };
             });
-            connection.query("SELECT salary FROM role WHERE department_id=?",[deptId], function(error, response){
-                if(error){throw error};
-                console.log(response);
-            })
-        })
+            connection.query("SELECT r.salary, r.department_id FROM role AS r INNER JOIN employee AS e ON e.role_id = r.id", function (error, response) {
+                let budget = 0;
+                if (error) { throw error };
+
+                response.forEach(element => {
+                    if (element.department_id === deptId) {
+                        budget = budget + element.salary;
+                    };
+                });
+
+                function numberWithCommas(x) {
+                    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                };
+                console.log("=".repeat(50));
+                console.log("Total department budget being used is: $" + numberWithCommas(budget));
+                console.log("=".repeat(50));
+                init().then(getData);
+            });
+        });
     } else {
         Font.create("Bye bye", 'Doom').then(function (graphic) {
             console.log("=".repeat(45));
