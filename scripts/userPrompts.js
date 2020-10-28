@@ -141,6 +141,16 @@ function askQuestion(question, arrayA, arrayB) {
                 }
             ]);
 
+        case "View Total Dept Budget Usage":
+            return inquirer.prompt([
+                {
+                    type: "list",
+                    message: "What Department would you like to see the budget for?",
+                    name: "deptName",
+                    choices: arrayA
+                }
+            ]);
+
         default:
             return "HIT THE DEFAULT"
     }
